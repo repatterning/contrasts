@@ -7,6 +7,7 @@ import pandas as pd
 import dask
 
 import src.algorithms.data
+import src.algorithms.difference
 import src.algorithms.persist
 import src.elements.partitions as pr
 
@@ -52,6 +53,7 @@ class Interface:
 
         # Tasks
         __get_data = dask.delayed(src.algorithms.data.Data().exc)
+        __difference = dask.delayed(src.algorithms.difference.Difference().exc)
         __persist = dask.delayed(src.algorithms.persist.Persist(
             reference=self.__reference, frequency=self.__arguments.get('frequency')).exc)
 
@@ -60,6 +62,7 @@ class Interface:
         for catchment_id in catchment_id_:
             listing = self.__get_codes(catchment_id=catchment_id)
             data = __get_data(listing=listing)
+            data = __difference(data=data)
             message = __persist(data=data, catchment_id=catchment_id)
             computations.append(message)
         messages = dask.compute(computations, scheduler='threads')[0]
